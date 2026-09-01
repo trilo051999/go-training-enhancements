@@ -1,0 +1,103 @@
+{
+  "name": "Global Pandemic & Healthcare Processing Pipeline",
+  "sources": [
+    {
+      "id": "covid-csv-source",
+      "type": "csv",
+      "path": "data/samples/covid_data.csv"
+    },
+    {
+      "id": "users-json-source",
+      "type": "json",
+      "path": "data/samples/users.json"
+    }
+  ],
+  "validation": {
+    "rules": [
+      {
+        "field": "country",
+        "rule": "required"
+      },
+      {
+        "field": "cases",
+        "rule": "min",
+        "value": 0
+      }
+    ]
+  },
+  "transformations": [
+    {
+      "type": "cast",
+      "params": {
+        "field": "cases",
+        "to_type": "integer"
+      }
+    },
+    {
+      "type": "default",
+      "params": {
+        "field": "deaths",
+        "value": "0"
+      }
+    },
+    {
+      "type": "cast",
+      "params": {
+        "field": "deaths",
+        "to_type": "integer"
+      }
+    }
+  ],
+  "aggregation": {
+    "group_by": [
+      "country"
+    ],
+    "metrics": [
+      {
+        "field": "cases",
+        "type": "sum",
+        "output_field": "total_cases"
+      },
+      {
+        "field": "cases",
+        "type": "avg",
+        "output_field": "avg_cases"
+      },
+      {
+        "field": "cases",
+        "type": "count",
+        "output_field": "record_count"
+      },
+      {
+        "field": "deaths",
+        "type": "sum",
+        "output_field": "total_deaths"
+      }
+    ]
+  },
+  "exports": [
+    {
+      "type": "sqlite",
+      "params": {
+        "table": "country_pandemic_summary"
+      }
+    },
+    {
+      "type": "json",
+      "params": {
+        "path": "exports/country_summary.json"
+      }
+    },
+    {
+      "type": "csv",
+      "params": {
+        "path": "exports/country_summary.csv"
+      }
+    }
+  ],
+  "concurrency": {
+    "validation_workers": 4,
+    "transform_workers": 4,
+    "buffer_size": 100
+  }
+}

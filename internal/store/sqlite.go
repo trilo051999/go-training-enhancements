@@ -355,3 +355,69 @@ func (s *SQLiteStore) GetJobResults(ctx context.Context, jobID string) ([]Result
 	}
 	return results, nil
 }
+
+func (s *SQLiteStore) ExportToTable(ctx context.Context, tableName string, data map[string]interface{}) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	columns := make([]string, 0, len(data))
+	placeholders := make([]string, 0, len(data))
+	values := make([]interface{}, 0, len(data))
+
+	createCols := ""
+	first := true
+	for k, v := range data {
+		columns = append(columns, k)
+		placeholders = append(placeholders, "?")
+		values = append(values, v)
+
+		colType := "TEXT"
+		switch v.(type) {
+		case int, int64, int32:
+			colType = "INTEGER"
+		case float64, float32:
+			colType = "REAL"
+		case bool:
+			colType = "INTEGER"
+		}
+
+		if !first {
+			createCols += ", "
+		}
+		createCols += fmt.Sprintf("`%s` %s", k, colType)
+		first = false
+	}
+
+	createTableQuery := fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%s` (%s);", tableName, createCols)
+	_, err := s.db.ExecContext(ctx, createTableQuery)
+	if err != nil {
+		return fmt.Errorf("failed to create export table %s: %w", tableName, err)
+	}
+
+	quotedCols := make([]string, len(columns))
+	for i, col := range columns {
+		quotedCols[i] = fmt.Sprintf("`%s`", col)
+	}
+
+	insertQuery := fmt.Sprintf("INSERT INTO `%s` (%s) VALUES (%s);",
+		tableName,
+		joinStrings(quotedCols, ", "),
+		joinStrings(placeholders, ", "),
+	)
+
+	_, err = s.db.ExecContext(ctx, insertQuery, values...)
+	return err
+}
+
+func joinStrings(strs []string, sep string) string {
+	if len(strs) == 0 {
+		return ""
+	}
+	res := strs[0]
+	for _, s := range strs[1:] {
+		res += sep + s
+	}
+	return res
+}
+

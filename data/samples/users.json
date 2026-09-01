@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "country": "USA",
+    "cases": 120,
+    "role": "Healthcare Worker",
+    "email": "alice@hospital.org"
+  },
+  {
+    "id": 2,
+    "name": "Bob Smith",
+    "country": "Canada",
+    "cases": 90,
+    "role": "Researcher",
+    "email": "bob@univ.ca"
+  },
+  {
+    "id": 3,
+    "name": "Priya Sharma",
+    "country": "India",
+    "cases": 150,
+    "role": "Doctor",
+    "email": "priya@med.in"
+  },
+  {
+    "id": 4,
+    "name": "John Doe",
+    "country": "UK",
+    "cases": 110,
+    "role": "Analyst",
+    "email": "john@data.co.uk"
+  }
+]
