@@ -167,6 +167,33 @@ func TestSQLiteStore_CRUD(t *testing.T) {
 		}
 	}
 
+	// 7b. Test ExportToTable (dynamic schema export)
+	exportData := map[string]interface{}{
+		"country":    "Canada",
+		"cases":      int64(150),
+		"avg_temp":   22.5,
+		"is_active":  true,
+	}
+	err = s.ExportToTable(ctx, "temp_export_covid", exportData)
+	if err != nil {
+		t.Fatalf("failed to export to table: %v", err)
+	}
+
+	// Verify table can be queried
+	var (
+		country  string
+		cases    int64
+		avgTemp  float64
+		isActive bool
+	)
+	err = s.db.QueryRowContext(ctx, "SELECT country, cases, avg_temp, is_active FROM temp_export_covid").Scan(&country, &cases, &avgTemp, &isActive)
+	if err != nil {
+		t.Fatalf("failed to query exported data: %v", err)
+	}
+	if country != "Canada" || cases != 150 || avgTemp != 22.5 || !isActive {
+		t.Errorf("queried export data mismatch: got country=%s cases=%d temp=%f active=%t", country, cases, avgTemp, isActive)
+	}
+
 	// 8. List Jobs
 	jobs, err := s.ListJobs(ctx)
 	if err != nil {

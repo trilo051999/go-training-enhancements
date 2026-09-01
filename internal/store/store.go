@@ -30,4 +30,5 @@ type Store interface {
 	// Aggregated Results Storage
 	SaveJobResult(ctx context.Context, jobID string, groupKey string, resultData map[string]interface{}) error
 	GetJobResults(ctx context.Context, jobID string) ([]ResultRow, error)
+	ExportToTable(ctx context.Context, tableName string, data map[string]interface{}) error
 }
